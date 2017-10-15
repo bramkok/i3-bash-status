@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# © 2012 Michael Stapelberg, Public Domain
+
+# This script is a trivial shell script to send your own output to i3bar while
+# using the JSON protocol.
+#
+# It is ugly and that is inherent to using JSON with shell scripts. You
+# _really_ should not do that. See i3status or i3status’s contrib/ directory
+# for examples of how to handle the output in higher-level languages.
+#
+# This example is purely for illustration of the protocol. DO NOT USE IT IN THE
+# REAL WORLD.
+
+# Refresh interval with 1 second default
+_interval="${1:-1}"
+
+# Toggle logging with default false
+_isLoggingEnabled="${2:-1}"
+
+_getValueFromJsonObjectBykey() {
+  local _obj="${1:-}"
+  local _key="${2:-}"
+
+  echo "${_obj}" |
+    sed -e 's/[}"]*\(.\)[{"]*/\1/g;y/,/\n/' |
+    grep -i "${_key}" | sed 's/.*://'
+}
+
+_logToFile() {
+  local _line="${1:-}"
+  local _log="/tmp/i3-bash-status.log"
+
+  if [ "${_isLoggingEnabled}" ]; then
+    echo "${_line}" >> "${_log}"
+  fi
+}
+
+_handleStatusBarClickEvents() {
+  local _name="${1:-}"
+  local _button="${2:-}"
+
+  case "${_name}" in
+    "time")
+      _logToFile "(time)    Name: ${_name} Button: ${_button}"
+    ;;
+    "battery")
+      _logToFile "(battery) Name: ${_name} Button: ${_button}"
+    ;;
+    "memory")
+      _logToFile "(memory)  Name: ${_name} Button: ${_button}"
+    ;;
+    "*")
+      _logToFile "(*) Failed to register name ${_name}"
+  esac
+}
+
+_filterJsonFromStdin() {
+  local _line="${1:-}"
+  local _name=""
+  local _button=""
+
+  if [ "${_line}" = "[" ]; then
+    return 1
+  fi
+
+  _name="$(_getValueFromJsonObjectBykey "${_line}" "name")"
+  _button="$(_getValueFromJsonObjectBykey "${_line}" "button")"
+
+  _handleStatusBarClickEvents "${_name}" "${_button}"
+}
+
+# Create block items for i3bar in the background
+exec i3-bash-blocks "${_interval}" &
+
+# Listen to stdin for click events
+while read -r line; do
+  _filterJsonFromStdin "${line}"
+done

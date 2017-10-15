@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+_interval="${1:-1}"
+
+# Setup i3bar JSON schema with header
+echo '{ "version": 1, "click_events": true }'
+echo "[[],"
+
+_printBlockItem() {
+  local _name="${1:-}"
+  local _fullText="${2:-}"
+  local _isLast="${3:-,}"
+
+  printf '  {  \n    "name\": "%s", \n    "full_text": "%s" \n  }%s \n' \
+    "${_name}" "${_fullText}" "${_isLast}"
+}
+
+while true; do
+  echo "["
+    _printBlockItem "battery" "$(i3-bash-battery)"
+    _printBlockItem "time"    "$(date '+%H%M')" " "
+  echo "],"
+
+  sleep "${_interval}"
+done
