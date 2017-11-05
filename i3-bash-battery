@@ -11,7 +11,7 @@ _battery=$(find "${_path}" -type l -name 'BAT*' -printf "%f\n")
 _charger=$(find "${_path}" -type l -name 'AC' -printf "%f\n")
 
 # Set charge percentage and ac-adapter status
-if [[ -e !"${_path}${_battery}/capacity" ]]; then exit 1; fi
+if [[ ! -e "${_path}${_battery}/capacity" ]]; then exit 1; fi
 _batteryLevel=$(cat "${_path}${_battery}"/capacity)
 _isConnected=$(cat "${_path}${_charger}"/online)
 
