@@ -1,0 +1,8 @@
+{
+  "name": "i3-bash-status",
+  "description": "i3 status in bash",
+  "scripts": [
+    "i3-bash-status"
+  ],
+  "install": "make install"
+}
