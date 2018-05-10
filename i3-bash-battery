@@ -16,8 +16,9 @@ _batteryLevel=$(cat "${_path}${_battery}"/capacity)
 _isConnected=$(cat "${_path}${_charger}"/online)
 
 # Warn user for battery levels below certain threshold
-if [[ "${_batteryLevel}" -lt "${_warningThreshold}" ]]; then
-  notify-send 'Low Battery' 'Your battery is below 10%.'
+if [[ "${_batteryLevel}" -lt "${_warningThreshold}" ]] &&
+   [[ "${_isConnected}" -eq 0 ]]; then
+  notify-send -u critical --expire-time=5000 "Low battery" "${_batteryLevel}% left."
 fi
 
 # Hide if ac-adapter is connected
